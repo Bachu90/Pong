@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pong</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #12151F;
+        }
+
+        canvas {
+            width: 1000px;
+            height: 500px;
+            border: 3px solid #C5C5C5;
+            margin: auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1>Player: <span id="playerPts">0</span> Computer: <span id="aiPts">0</span></h1>
+    <canvas id="canvas">Twoja przeglądarka nie obsługuje Canvas</canvas>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+
+        canvas.width = canvas.scrollWidth;
+        canvas.height = canvas.scrollHeight;
+
+        const ctx = canvas.getContext("2d");
+
+        const middleLine = {
+            width: 6,
+            height: 16
+        };
+
+        const ball = {
+            size: 10,
+            posX: canvas.width / 2,
+            posY: canvas.height / 2,
+            speedX: 5,
+            speedY: 5
+        }
+
+        const player = {
+            width: 15,
+            height: 100,
+            posX: 0.05 * canvas.width,
+            posY: canvas.height / 2 - 50,
+            pts: 0
+        }
+
+        const ai = {
+            width: 15,
+            height: 100,
+            posX: canvas.width - (0.05 * canvas.width + 15),
+            posY: canvas.height / 2 - 50,
+            pts: 0
+        }
+
+        function Table() {
+
+            ctx.fillStyle = "#2CA213";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 20; i < canvas.height; i += 30) {
+                ctx.fillStyle = "#C5C5C5";
+                ctx.fillRect(canvas.width / 2 - middleLine.width / 2, i, middleLine.width, middleLine.height);
+            }
+
+            ctx.strokeStyle = "#C5C5C5";
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, canvas.height * 0.25, 0, Math.PI * 2);
+            ctx.stroke();
+
+        };
+
+        function Ball() {
+            ctx.fillStyle = "#fff";
+            ctx.beginPath();
+            ctx.arc(ball.posX, ball.posY, ball.size, 0, Math.PI * 2);
+            ctx.fill();
+
+            ball.posX += -ball.speedX;
+            ball.posY += -ball.speedY;
+
+        }
+
+        function Player() {
+            ctx.fillStyle = "#029DD0";
+            ctx.fillRect(player.posX, player.posY, player.width, player.height);
+
+        }
+
+        function AI() {
+            ctx.fillStyle = "#FF2300";
+            ctx.fillRect(ai.posX, ai.posY, ai.width, ai.height);
+        }
+
+        function Reflect() {
+            if ((ball.posX - ball.size <= player.posX + player.width) && (ball.posX - ball.size > player.posX) && (player.posY < ball.posY) && (ball.posY < player.posY + player.height)) {
+                ball.speedX = -ball.speedX;
+            } else if ((ball.posX + ball.size >= ai.posX) && (ball.posX - ball.size < ai.posX + ai.width) && (ai.posY < ball.posY) && (ball.posY < ai.posY + ai.height)) {
+                ball.speedX = -ball.speedX;
+            }
+
+            if (ball.posY - ball.size <= 0 || ball.posY + ball.size >= canvas.height) {
+                ball.speedY = -ball.speedY;
+            }
+        }
+
+        function goal() {
+            if (ball.posX - ball.size <= 0) {
+                ai.pts += 1;
+                ball.posX = canvas.width / 2;
+                ball.posY = canvas.height / 2;
+                Player();
+                AI();
+            } else if (ball.posX + ball.size >= canvas.width) {
+                player.pts += 1;
+                ball.posX = canvas.width / 2;
+                ball.posY = canvas.height / 2;
+                Player();
+                AI();
+            }
+        }
+
+        function points() {
+            document.querySelector("#playerPts").innerHTML = player.pts;
+            document.querySelector("#aiPts").innerHTML = ai.pts;
+        }
+
+        /*-----------SZTUCZNA INTELIGENCJA----------*/
+
+        function aiPosition() {
+            let middleAi = ai.posY + ai.height / 2;
+
+            if (ball.posX > canvas.width / 2) {
+                if (middleAi - ball.posY > canvas.height / 3) {
+                    ai.posY -= 24;
+                } else if (middleAi - ball.posY > canvas.height / 10) {
+                    ai.posY -= 10;
+                } else if (middleAi - ball.posY < -(canvas.height / 3)) {
+                    ai.posY += 24;
+                } else if (middleAi - ball.posY < -(canvas.height / 10)) {
+                    ai.posY += 10;
+                }
+            } else if (ball.posX <= canvas.width / 2 && ball.posX > canvas.width / 10) {
+                if (middleAi - ball.posY > canvas.height / 5) {
+                    ai.posY -= 3;
+                } else if (middleAi - ball.posY < -(canvas.height / 5)) {
+                    ai.posY += 3;
+                }
+            }
+        }
+
+        function Game() {
+            if (player.pts >= 10) {
+                alert("PLAYER WON!");
+                if (confirm("Play again?")) {
+                    player.pts = 0;
+                }
+            } else if (ai.pts >= 10) {
+                alert("COMPUTER WON!");
+                if (confirm("Play again?")) {
+                    ai.pts = 0;
+                }
+            } else {
+                Table();
+                points();
+                Ball();
+                Player();
+                AI();
+                Reflect();
+                aiPosition();
+                goal();
+            }
+
+        }
+
+        canvas.addEventListener("mousemove", function(e) {
+            player.posY = e.clientY - canvas.offsetTop - player.height / 2;
+
+            if (player.posY <= 0) {
+                player.posY = 0;
+            } else if (player.posY + player.height >= canvas.height) {
+                player.posY = canvas.height - player.height;
+            }
+        });
+
+        setInterval(Game, 1000 / 60);
+
+    </script>
+</body>
+
+</html>
