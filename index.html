@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pong</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #12151F;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .menu,
+        .game-over {
+            width: 100%;
+            height: 100vh;
+        }
+
+        .menu h1,
+        .game-over h1 {
+            text-align: center;
+            font-size: 56px;
+            margin-top: 10vh;
+        }
+
+        button.start-game {
+            display: block;
+            width: 200px;
+            height: 50px;
+            margin: 20vh auto 0 auto;
+            background-color: transparent;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all .1s;
+        }
+
+        button.start-game:hover {
+            background-color: #fff;
+            color: #12151F;
+            font-weight: bold;
+            transform: scale(1.02);
+        }
+
+        .menu p,
+        .game-over p {
+            font-size: 30px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .board {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: none;
+        }
+
+        canvas {
+            width: 1000px;
+            height: 500px;
+            border: 3px solid #C5C5C5;
+        }
+
+        h1 {
+            color: white;
+            text-emphasis: center;
+            margin-bottom: 10vh;
+        }
+
+        h1 span:first-of-type {
+            margin-right: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="menu">
+        <h1>Pong game</h1>
+        <button class="start-game">Start</button>
+    </div>
+    <div class="board">
+        <h1>Player: <span id="playerPts">0</span> Computer: <span id="aiPts">0</span></h1>
+        <canvas id="canvas">Twoja przeglądarka nie obsługuje Canvas</canvas>
+    </div>
+    <div class="game-over">
+        <h1>Game Over</h1>
+        <p><span id="winner"></span> has won!</p>
+        <button class="start-game">Play Again?</button>
+    </div>
+
+    <script>
+        const menu = document.querySelector('.menu');
+        const board = document.querySelector('.board');
+        const gameOver = document.querySelector('.game-over');
+        const canvas = document.getElementById("canvas");
+
+        canvas.width = canvas.scrollWidth;
+        canvas.height = canvas.scrollHeight;
+
+        const ctx = canvas.getContext("2d");
+
+        const game = {
+            state: 'menu',
+            winner: ''
+        }
+
+        const middleLine = {
+            width: 6,
+            height: 16
+        };
+
+        const ball = {
+            size: 10,
+            posX: canvas.width / 2,
+            posY: canvas.height / 2,
+            speedX: 5,
+            speedY: 5
+        }
+
+        const player = {
+            width: 15,
+            height: 100,
+            posX: 0.05 * canvas.width,
+            posY: canvas.height / 2 - 50,
+            pts: 0
+        }
+
+        const ai = {
+            width: 15,
+            height: 100,
+            posX: canvas.width - (0.05 * canvas.width + 15),
+            posY: canvas.height / 2 - 50,
+            pts: 0
+        }
+
+        function drawTable() {
+
+            ctx.fillStyle = "#2CA213";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 20; i < canvas.height; i += 30) {
+                ctx.fillStyle = "#C5C5C5";
+                ctx.fillRect(canvas.width / 2 - middleLine.width / 2, i, middleLine.width, middleLine.height);
+            }
+
+            ctx.strokeStyle = "#C5C5C5";
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, canvas.height * 0.25, 0, Math.PI * 2);
+            ctx.stroke();
+
+        };
+
+        function drawBall() {
+            ctx.fillStyle = "#fff";
+            ctx.beginPath();
+            ctx.arc(ball.posX, ball.posY, ball.size, 0, Math.PI * 2);
+            ctx.fill();
+
+            ball.posX += -ball.speedX;
+            ball.posY += -ball.speedY;
+
+        }
+
+        function drawPlayer() {
+            ctx.fillStyle = "#029DD0";
+            ctx.fillRect(player.posX, player.posY, player.width, player.height);
+
+        }
+
+        function drawAI() {
+            ctx.fillStyle = "#FF2300";
+            ctx.fillRect(ai.posX, ai.posY, ai.width, ai.height);
+        }
+
+        function checkCollisions() {
+            if ((ball.posX - ball.size <= player.posX + player.width) && (ball.posX - ball.size > player.posX) && (player.posY < ball.posY) && (ball.posY < player.posY + player.height)) {
+                // change vector
+                ball.speedX = -ball.speedX;
+
+                //inecrase speed
+                ball.speedX += ball.speedX * 0.1;
+                ball.speedY += ball.speedY * 0.1;
+
+            } else if ((ball.posX + ball.size >= ai.posX) && (ball.posX - ball.size < ai.posX + ai.width) && (ai.posY < ball.posY) && (ball.posY < ai.posY + ai.height)) {
+                // change vector
+                ball.speedX = -ball.speedX;
+
+                //inecrase speed
+                ball.speedX += ball.speedX * 0.1;
+                ball.speedY += ball.speedY * 0.1;
+            }
+
+            if (ball.posY - ball.size <= 0 || ball.posY + ball.size >= canvas.height) {
+                ball.speedY = -ball.speedY;
+            }
+        }
+
+        function checkGoal() {
+            if (ball.posX - ball.size <= 0) {
+                ai.pts += 1;
+                ball.posX = canvas.width / 2;
+                ball.posY = canvas.height / 2;
+                drawPlayer();
+                drawAI();
+            } else if (ball.posX + ball.size >= canvas.width) {
+                player.pts += 1;
+                ball.posX = canvas.width / 2;
+                ball.posY = canvas.height / 2;
+                drawPlayer();
+                drawAI();
+            }
+        }
+
+        function updatePoints() {
+            document.querySelector("#playerPts").innerHTML = player.pts;
+            document.querySelector("#aiPts").innerHTML = ai.pts;
+        }
+
+        /*----------- AI ----------*/
+
+        function moveAi() {
+            let middleAi = ai.posY + ai.height / 2;
+
+            if (ball.posX > canvas.width / 2) {
+                if (middleAi - ball.posY > canvas.height / 3) {
+                    ai.posY -= 24;
+                } else if (middleAi - ball.posY > canvas.height / 10) {
+                    ai.posY -= 10;
+                } else if (middleAi - ball.posY < -(canvas.height / 3)) {
+                    ai.posY += 24;
+                } else if (middleAi - ball.posY < -(canvas.height / 10)) {
+                    ai.posY += 10;
+                }
+            } else if (ball.posX <= canvas.width / 2 && ball.posX > canvas.width / 10) {
+                if (middleAi - ball.posY > canvas.height / 5) {
+                    ai.posY -= 3;
+                } else if (middleAi - ball.posY < -(canvas.height / 5)) {
+                    ai.posY += 3;
+                }
+            }
+        }
+
+        function Render() {
+            if (game.state === 'menu') {
+                menu.style.display = 'block';
+                board.style.display = 'none';
+                gameOver.style.display = 'none';
+                clearInterval(render);
+            } else if (game.state === 'running') {
+                menu.style.display = 'none';
+                board.style.display = 'flex';
+                gameOver.style.display = 'none';
+
+                if (player.pts >= 2 || ai.pts >= 2) {
+                    updatePoints();
+                    game.state = 'gameover';
+                    game.winner = player.pts > ai.pts ? 'Player' : 'Computer';
+                    document.querySelector('.game-over p').style.color = game.winner === 'Player' ? 'lime' : 'orangered';
+                } else {
+                    drawTable();
+                    updatePoints();
+                    drawBall();
+                    drawPlayer();
+                    drawAI();
+                    checkCollisions();
+                    moveAi();
+                    checkGoal();
+                }
+            } else if (game.state = 'gameover') {
+                menu.style.display = 'none';
+                board.style.display = 'none';
+                gameOver.style.display = 'block';
+                document.querySelector('span#winner').innerHTML = game.winner;
+                clearInterval(render);
+            }
+        }
+
+        let render = setInterval(Render, 1000 / 60);
+
+        function startGame() {
+            player.pts, ai.pts = 0;
+            game.winner = '';
+            game.state = 'running';
+            render = setInterval(Render, 1000 / 60);
+        }
+
+        // Listeners
+
+        document.querySelectorAll('button.start-game').forEach(button => {
+            button.addEventListener('click', () => {
+                startGame();
+            })
+        });
+
+        board.addEventListener("mousemove", function (e) {
+            player.posY = e.clientY - canvas.offsetTop - player.height / 2;
+
+            if (player.posY <= 0) {
+                player.posY = 0;
+            } else if (player.posY + player.height >= canvas.height) {
+                player.posY = canvas.height - player.height;
+            }
+        });
+
+    </script>
+</body>
+
+</html>
