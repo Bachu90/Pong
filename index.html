@@ -124,7 +124,7 @@
         const game = {
             state: 'menu',
             winner: '',
-            maxPts: 2
+            maxPts: 3
         }
 
         const middleLine = {
@@ -310,7 +310,7 @@
                     moveAi();
                     checkGoal();
                 }
-            } else if (game.state = 'gameover') {
+            } else if (game.state === 'gameover') {
                 menu.style.display = 'none';
                 board.style.display = 'none';
                 gameOver.style.display = 'block';
