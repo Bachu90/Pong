@@ -82,6 +82,9 @@
 
         .goal-text {
             font-size: 56px;
+            font-weight: bold;
+            color: #fff;
+            text-transform: uppercase;
             position: absolute;
             top: 40%;
             left: 50%;
@@ -97,7 +100,7 @@
     </div>
     <div class="board">
         <h1>Player: <span id="playerPts">0</span> Computer: <span id="aiPts">0</span></h1>
-        <canvas id="canvas">Twoja przeglądarka nie obsługuje Canvas</canvas>
+        <canvas id="canvas">Your browser does not support Canvas</canvas>
     </div>
     <div class="game-over">
         <h1>Game Over</h1>
@@ -264,19 +267,19 @@
 
             if (ball.posX > canvas.width / 2) {
                 if (middleAi - ball.posY > canvas.height / 3) {
-                    ai.posY -= 24;
+                    ai.posY -= 27;
                 } else if (middleAi - ball.posY > canvas.height / 10) {
-                    ai.posY -= 10;
+                    ai.posY -= 13;
                 } else if (middleAi - ball.posY < -(canvas.height / 3)) {
-                    ai.posY += 24;
+                    ai.posY += 27;
                 } else if (middleAi - ball.posY < -(canvas.height / 10)) {
-                    ai.posY += 10;
+                    ai.posY += 13;
                 }
             } else if (ball.posX <= canvas.width / 2 && ball.posX > canvas.width / 10) {
                 if (middleAi - ball.posY > canvas.height / 5) {
-                    ai.posY -= 3;
+                    ai.posY -= 6;
                 } else if (middleAi - ball.posY < -(canvas.height / 5)) {
-                    ai.posY += 3;
+                    ai.posY += 6;
                 }
             }
         }
@@ -319,7 +322,8 @@
         let render = setInterval(Render, 1000 / 60);
 
         function startGame() {
-            player.pts, ai.pts = 0;
+            player.pts = 0;
+            ai.pts = 0;
             game.winner = '';
             game.state = 'running';
             render = setInterval(Render, 1000 / 60);
