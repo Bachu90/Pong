@@ -208,7 +208,7 @@
 
                 //inecrase speed
                 ball.speedX += ball.speedX * 0.05;
-                ball.speedY += ball.speedY * 0.03;
+                ball.speedY += ball.speedY * 0.04;
 
             } else if ((ball.posX + ball.size >= ai.posX) && (ball.posX - ball.size < ai.posX + ai.width) && (ai.posY < ball.posY) && (ball.posY < ai.posY + ai.height)) {
                 // change vector
@@ -216,7 +216,7 @@
 
                 //inecrase speed
                 ball.speedX += ball.speedX * 0.05;
-                ball.speedY += ball.speedY * 0.03;
+                ball.speedY += ball.speedY * 0.04;
             }
 
             if (ball.posY - ball.size <= 0 || ball.posY + ball.size >= canvas.height) {
